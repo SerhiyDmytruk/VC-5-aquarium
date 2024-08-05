@@ -1,76 +1,91 @@
 <script setup>
+import { ref } from "vue";
+const defaultType = "golden-purple-fish";
+const emit = defineEmits(["add"]);
 
-import { reactive, ref } from "vue";
+const randomNames = [
+  "The Fish with No Name",
+  "Gilbert",
+  "Mr. Buttons",
+  "Blubbles",
+  "Dinner",
+];
 
-const props = defineProps({
-    fishValue: {type: Object, default:null}
+const newFish = ref({
+  type: defaultType,
+  name: getRandomName(),
 });
-const emit = defineEmits(["addFish"]);
 
-const fishURL = ref('');
+const fishes = [
+  { name: "Golden Purple Fish", type: "golden-purple-fish", size: "w-36" },
+  { name: "Goldfish", type: "goldfish", size: "w-28" },
+  { name: "Guppie", type: "guppie", size: "w-24" },
+  { name: "Tropical Fish", type: "tropical-fish", size: "w-48" },
+  { name: "Tuna", type: "tuna", size: "w-12" },
+];
 
-const form = reactive({
-    name: props.fishValue?.name,
-});
+const input = ref();
+function addFish() {
+  console.log("adding fish");
+  if (!newFish.value.name) return;
+  emit("add", {
+    id: Math.random().toString(36),
+    ...newFish.value,
+    size: fishes.find((fish) => fish.type === newFish.value.type).size,
+  });
+  reset();
+  input.value.focus();
+}
 
-function saveFish() {
-    const data = {
-        name: form.name,
-        url: fishURL.value
-    };
+function reset() {
+  newFish.value.name = getRandomName();
+}
 
-    emit("addFish", data);
+function getRandomName() {
+  return randomNames[Math.floor(Math.random() * randomNames.length)];
 }
 </script>
-
 <template>
-    <div  class="w-full h-full text-white font-bold flex flex-col max-w-[325px]">
-        <form @submit.prevent="saveFish">
-            <div class="field flex flex-col mb-14">
-                <span>Fish Type</span>
+  <form class="h-full p-5 bg-[#1f3d7c]" @submit.prevent="addFish">
+    <label>Fish Type</label>
+    <ul class="flex flex-wrap mt-4">
+      <li
+        @click="newFish.type = fish.type"
+        v-for="fish in fishes"
+        :key="fish.type"
+        class="block w-1/2 mb-2 cursor-pointer"
+        :class="{
+          selected: fish.type === newFish.type,
+        }"
+      >
+        <img :src="`/${fish.type}.png`" :alt="fish.name" class="w-24" />
+      </li>
+    </ul>
 
-                <ul class="flex w-full flex-row flex-wrap mt-4">
-
-                    <li v-for="(fish, index) in fishValue"
-                        :key="index"
-                        class="w-1/2 focus:outline-none1 focus:ring focus:ring-violet-300"
-                        >
-                    
-                        <label :for="fish.name">
-                            <input 
-                                class="hidden"
-                                type="radio" 
-                                :id="fish.name" 
-                                :value="fish.url" 
-                                v-model="fishURL" 
-                            />
-                            <img :src="fish.url" :alt="fish.name">
-                        </label>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="field flex flex-col max-w-[325px] overflow-hidden">
-                <label class="mb-1">
-                    Name
-                </label>
-
-                <input 
-                    type="text" 
-                    class="h-12 mb-4 p-2 max-w-[325px] text-black" 
-                    placeholder="Enter Fish name"
-                    v-model="form.name"
-                />
-
-                <button class="p-4 bg-rose-600 w-full">Add Fish</button>
-            </div>
-        </form>
-    </div>
-
+    <label for="fish-name" class="mt-10">Name </label>
+    <input
+      id="fish-name"
+      ref="input"
+      type="text"
+      v-model="newFish.name"
+      class="w-full p-2 text-lg rounded"
+      placeholder="Mr. Buttons"
+    />
+    <button
+      type="submit"
+      class="w-full p-4 mt-5 text-xl text-white bg-red-600 rounded"
+    >
+      Add Fish
+    </button>
+  </form>
 </template>
 
 <style scoped>
-    input[type="radio"]:checked + img {
-        filter: drop-shadow(-1px 0px 11px #4444dd);
-    }
+label {
+  @apply text-white font-bold mb-2 block;
+}
+.selected {
+  filter: drop-shadow(2px 2px 0 #00cfff) drop-shadow(-2px -2px 0 #00cfff)
+    drop-shadow(2px -2px 0 #00cfff) drop-shadow(-2px 2px 0 #00cfff);
+}
 </style>
